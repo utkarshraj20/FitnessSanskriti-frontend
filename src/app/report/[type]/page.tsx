@@ -7,6 +7,10 @@ import CaloriIntakePopup from '@/components/ReportFormPopup/CalorieIntake/Calori
 import { stringify } from 'querystring';
 import { useParams } from 'next/navigation';
 import SleepTakenPopup from '@/components/ReportFormPopup/SleepTaken/SleepTakenPopup';
+import StepsDonePopup from '@/components/ReportFormPopup/StepsDone/StepsDonePopup';
+import WaterIntakePopup from '@/components/ReportFormPopup/WaterIntake/WaterIntakePopup';
+import WorkoutDonePopup from '@/components/ReportFormPopup/WorkoutDone/WorkoutDonePopup';
+import WeightStatusPopup from '@/components/ReportFormPopup/WeightStatus/WeightStatusPopup';
 
 const page = () => {
     let { type } = useParams();
@@ -21,20 +25,20 @@ const page = () => {
     const [dataS1, setDataS1] = React.useState<any>(null);
     console.log(type)
     const renderPopup = () => {
-        if (type=="calorieintake") {
-          return <CaloriIntakePopup setShowCalorieIntakePopup={setShowPopup} />;
+        if (type == "calorieintake") {
+            return <CaloriIntakePopup setShowCalorieIntakePopup={setShowPopup} />;
         } else if (type == "sleep") {
-          return <SleepTakenPopup setShowSleepTakenPopup={setShowPopup} />;
-        } else if(type == "steps"){
-
-        } else if(type == "water"){
-
-        } else if(type == "workout"){
-
-        } else if(type == "weight"){
-
+            return <SleepTakenPopup setShowSleepTakenPopup={setShowPopup} />;
+        } else if (type == "steps") {
+            return <StepsDonePopup setShowStepsDonePopup={setShowPopup} />;
+        } else if (type == "water") {
+            return <WaterIntakePopup setShowWaterIntakePopup={setShowPopup} />;
+        } else if (type == "workout") {
+            return <WorkoutDonePopup setShowWorkoutDonePopup={setShowPopup} />;
+        } else if (type == "weight") {
+            return <WeightStatusPopup setShowWeightStatusPopup={setShowPopup} />;
         }
-      };
+    };
 
 
     const getDataForS1 = async () => {
@@ -50,7 +54,7 @@ const page = () => {
             .then(data => {
                 if (data.ok) {
                     let temp = data.data;
-                    if (temp && temp.length ) {
+                    if (temp && temp.length) {
                         console.log("data is there", temp);
                         let dataForLineChart = temp.map((item: any) => {
                             let val = JSON.stringify(item.value)
@@ -74,7 +78,7 @@ const page = () => {
                             }
                         })
                     }
-                    else{
+                    else {
                         console.log("data is not there");
                         setDataS1(null)
                     }
@@ -115,7 +119,7 @@ const page = () => {
                     />
                 }
             </div>
-            
+
             <button className='editbutton'
                 onClick={() => {
                     setShowPopup(true)
