@@ -78,27 +78,27 @@ const AuthPopup: React.FC<AuthPopupProps> = ({ setShowpopup }) => {
         console.log(signupformData) ;
 
         fetch(process.env.NEXT_PUBLIC_BACKEND_API + '/auth/register' , {
-            method: 'POST',
-            headers:{
-                'Content-type': 'application/json'
-            },
-            body: JSON.stringify(signupformData),
-            credentials: 'include' // no use in register as no cookies
-        })
-        .then(res => res.json())
-        .then(data =>{
-            console.log(data)
-            if( data.ok ){
-                toast.success(data.message)
-                setShowpopup(false)
-            }
-            else{
-                toast.error(data.message)
-            }
-        }).catch(err=>{
-            console.log(err)
-        })
-    };
+        method: 'POST',
+        headers:{
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify(signupformData),
+        credentials: 'include' // no use in register as no cookies
+    })
+    .then(res => res.json())
+    .then(data =>{
+        console.log(data)
+        if( data.ok ){
+            toast.success(data.message)
+            setShowpopup(false)
+        }
+        else{
+            toast.error(data.message)
+        }
+    }).catch(err=>{
+        console.log(err)
+    })
+};
 
     return (
         <div className='popup' >

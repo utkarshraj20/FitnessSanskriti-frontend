@@ -1,4 +1,5 @@
 import React from 'react'
+import { useState } from 'react';
 import CircularProgress from '@mui/joy/CircularProgress';
 import { AiOutlineEye } from 'react-icons/ai'
 import './HomeBanner1.css'
@@ -6,7 +7,7 @@ import './HomeBanner1.css'
 const HomeBanner1 = () => {
 
 
-  const [data, setData] = React.useState<any>(null)
+  const [data, setData] = useState<any>(null)
 
   const getData = async () => {
     let temp = [
@@ -53,8 +54,25 @@ const HomeBanner1 = () => {
         "goalUnit": "days"
       }
     ]
-    setData(temp)
-    console.log(temp)
+
+    fetch(process.env.NEXT_PUBLIC_BACKEND_API + '/report/getreport', {
+      method: 'GET',
+      credentials: 'include'
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) {
+          console.log(data.data)
+          setData(data.data)
+        }
+      })
+      .catch(err => {
+        console.log("error is coming")
+        console.log(err)
+      })
+
+    // setData(temp)
+    // console.log(temp)
   }
 
   React.useEffect(() => {
@@ -88,7 +106,7 @@ const HomeBanner1 = () => {
                 </div>
                 <div className='card-header-box'>
                   <div className='card-header-box-name'>Target</div>
-                  <div className='card-header-box-value'>{item.goal} {item.goalUnit}</div>
+                  <div className='card-header-box-value'>{item.goal} {item.unit}</div>
                 </div>
               </div>
 
@@ -109,9 +127,9 @@ const HomeBanner1 = () => {
               </CircularProgress>
 
               <button
-               onClick={() => {
-                window.location.href = `/report/${item.name}`
-              }}
+                onClick={() => {
+                  window.location.href = `/report/${item.name}`
+                }}
               >Show Report <AiOutlineEye /></button>
 
             </div>

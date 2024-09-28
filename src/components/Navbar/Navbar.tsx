@@ -6,6 +6,7 @@ import './Navbar.css'
 import Image from 'next/image'
 import Link from 'next/link'
 import AuthPopup from '../AuthPopup/AuthPopup'
+import { toast } from 'react-toastify';
 
 const Navbar = () => {
 
@@ -13,7 +14,7 @@ const Navbar = () => {
   const [showpopup, setShowpopup] = React.useState<boolean>(false);
 
   const checklogin = async () => {
-    fetch(process.env.NEXT_PUBLIC_BACKEND_API + '/auth/checklogin', {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_API}/auth/checklogin`, {
       method: 'POST',
       credentials: 'include' // no use in register as no cookies
     })
@@ -23,13 +24,34 @@ const Navbar = () => {
         if (data.ok) {
           setIsloggedin(true)
         }
-        else{
+        else {
           setIsloggedin(false)
         }
       })
       .catch(err => {
         console.log(err)
       })
+  }
+
+  const handleLogout = () => {
+    fetch(process.env.NEXT_PUBLIC_BACKEND_API + '/auth/logout', {
+      method: 'POST',
+      credentials: 'include' // Ensures cookies are included
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) {
+          toast.success(data.message);
+          setIsloggedin(false)
+          // window.location.href = '/login';
+        } else {
+          toast.error(data.message);
+        }
+      })
+      .catch(err => {
+        console.log('Logout failed:', err);
+        toast.error('Logout failed. Please try again.');
+      });
   }
 
   React.useEffect(() => {
@@ -45,7 +67,9 @@ const Navbar = () => {
       <Link href='/profile'><IoIosBody /></Link>
       {
         isloggedIn ?
-          <button>Logout</button>
+          <button
+            onClick={handleLogout}
+          >Logout</button>
           :
           <button
             onClick={() => {
