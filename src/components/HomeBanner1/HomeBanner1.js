@@ -2,15 +2,14 @@ import React, { useState } from "react";
 import CircularProgress from "@mui/joy/CircularProgress";
 import { AiOutlineEye } from "react-icons/ai";
 import "./HomeBanner1.css";
-import { apiUrl } from "@/utils/api";
+import { authFetch } from "@/utils/api";
 
 const HomeBanner1 = () => {
   const [data, setData] = useState(null);
 
   const getData = async () => {
-    fetch(apiUrl("/report/getreport"), {
+    authFetch("/report/getreport", {
       method: "GET",
-      credentials: "include",
     })
       .then((res) => res.json())
       .then((response) => {

@@ -7,16 +7,15 @@ import Image from "next/image";
 import Link from "next/link";
 import AuthPopup from "../AuthPopup/AuthPopup";
 import { toast } from "react-toastify";
-import { apiUrl, clearLocalAuthCookies } from "@/utils/api";
+import { authFetch, clearLocalAuthCookies } from "@/utils/api";
 
 const Navbar = () => {
   const [isloggedIn, setIsloggedin] = React.useState(false);
   const [showpopup, setShowpopup] = React.useState(false);
 
   const checklogin = async () => {
-    fetch(apiUrl("/auth/checklogin"), {
+    authFetch("/auth/checklogin", {
       method: "POST",
-      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {
@@ -32,9 +31,8 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    fetch(apiUrl("/auth/logout"), {
+    authFetch("/auth/logout", {
       method: "POST",
-      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {

@@ -7,18 +7,17 @@ import dayjs from "dayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DesktopDatePicker } from "@mui/x-date-pickers";
-import { apiUrl } from "@/utils/api";
+import { authFetch } from "@/utils/api";
 
 const SleepTakenPopup = ({ setShowSleepTakenPopup }) => {
   const [date, setDate] = React.useState(new Date());
   const [sleepHours, setSleepHours] = React.useState("");
 
   const handleAddSleep = () => {
-    fetch(apiUrl("/sleeptrack/addsleepentry"), {
+    authFetch("/sleeptrack/addsleepentry", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ durationInHrs: sleepHours, date }),
-      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {

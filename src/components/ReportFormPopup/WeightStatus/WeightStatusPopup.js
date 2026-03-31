@@ -7,18 +7,17 @@ import dayjs from "dayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DesktopDatePicker } from "@mui/x-date-pickers";
-import { apiUrl } from "@/utils/api";
+import { authFetch } from "@/utils/api";
 
 const WeightStatusPopup = ({ setShowWeightStatusPopup }) => {
   const [date, setDate] = React.useState(new Date());
   const [weight, setWeight] = React.useState("");
 
   const handleAddWeight = () => {
-    fetch(apiUrl("/weighttrack/addweightentry"), {
+    authFetch("/weighttrack/addweightentry", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ weightInKg: weight, date }),
-      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {

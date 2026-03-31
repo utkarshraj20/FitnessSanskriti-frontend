@@ -19,3 +19,44 @@ export const clearLocalAuthCookies = () => {
   document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
   document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
 };
+
+export const getLocalCookie = (name) => {
+  if (typeof document === "undefined") return "";
+
+  const cookies = document.cookie ? document.cookie.split("; ") : [];
+  const cookie = cookies.find((item) => item.startsWith(`${name}=`));
+  return cookie ? decodeURIComponent(cookie.split("=").slice(1).join("=")) : "";
+};
+
+export const getAuthHeaders = (headers = {}) => {
+  const authToken = getLocalCookie("authToken");
+  const refreshToken = getLocalCookie("refreshToken");
+  const mergedHeaders = { ...headers };
+
+  if (authToken) {
+    mergedHeaders.Authorization = `Bearer ${authToken}`;
+  }
+
+  if (refreshToken) {
+    mergedHeaders["x-refresh-token"] = refreshToken;
+  }
+
+  return mergedHeaders;
+};
+
+export const authFetch = async (path, options = {}) => {
+  const response = await fetch(apiUrl(path), {
+    credentials: "include",
+    ...options,
+    headers: getAuthHeaders(options.headers || {}),
+  });
+
+  const nextAuthToken = response.headers.get("x-auth-token");
+  const nextRefreshToken = response.headers.get("x-refresh-token");
+
+  if (nextAuthToken || nextRefreshToken) {
+    setLocalAuthCookies(nextAuthToken || getLocalCookie("authToken"), nextRefreshToken || getLocalCookie("refreshToken"));
+  }
+
+  return response;
+};

@@ -10,7 +10,7 @@ import StepsDonePopup from "@/components/ReportFormPopup/StepsDone/StepsDonePopu
 import WaterIntakePopup from "@/components/ReportFormPopup/WaterIntake/WaterIntakePopup";
 import WorkoutDonePopup from "@/components/ReportFormPopup/WorkoutDone/WorkoutDonePopup";
 import WeightStatusPopup from "@/components/ReportFormPopup/WeightStatus/WeightStatusPopup";
-import { apiUrl } from "@/utils/api";
+import { authFetch } from "@/utils/api";
 
 const page = () => {
   let { type } = useParams();
@@ -34,11 +34,10 @@ const page = () => {
   };
 
   const getDataForS1 = async () => {
-    fetch(apiUrl(`/${type}track/get${type}bylimit`), {
+    authFetch(`/${type}track/get${type}bylimit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ limit: 7 }),
-      credentials: "include",
     })
       .then((res) => res.json())
       .then((response) => {

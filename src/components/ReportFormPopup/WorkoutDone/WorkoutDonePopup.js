@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DesktopDatePicker } from "@mui/x-date-pickers";
-import { apiUrl } from "@/utils/api";
+import { authFetch } from "@/utils/api";
 
 const WorkoutDonePopup = ({ setShowWorkoutDonePopup }) => {
   const [date, setDate] = React.useState(new Date());
@@ -15,11 +15,10 @@ const WorkoutDonePopup = ({ setShowWorkoutDonePopup }) => {
   const [exerciseName, setExerciseName] = React.useState("");
 
   const handleAddWorkoutDone = () => {
-    fetch(apiUrl("/workouttrack/addworkoutentry"), {
+    authFetch("/workouttrack/addworkoutentry", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ date, exercise: exerciseName, durationInMinutes }),
-      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {

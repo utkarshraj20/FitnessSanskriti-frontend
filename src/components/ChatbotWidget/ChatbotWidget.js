@@ -2,7 +2,7 @@
 
 import React from "react";
 import { FiMessageCircle, FiSend, FiX } from "react-icons/fi";
-import { apiUrl } from "@/utils/api";
+import { authFetch } from "@/utils/api";
 import "./ChatbotWidget.css";
 
 const starterQuestions = [
@@ -25,9 +25,8 @@ export default function ChatbotWidget() {
   const [isLoading, setIsLoading] = React.useState(false);
 
   const checkLogin = React.useCallback(() => {
-    fetch(apiUrl("/auth/checklogin"), {
+    authFetch("/auth/checklogin", {
       method: "POST",
-      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {
@@ -53,10 +52,9 @@ export default function ChatbotWidget() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(apiUrl("/chat/ask"), {
+      const response = await authFetch("/chat/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           message: trimmedMessage,
           history: updatedMessages.map((message) => ({

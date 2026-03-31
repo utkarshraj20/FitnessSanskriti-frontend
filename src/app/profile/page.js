@@ -3,7 +3,7 @@
 import React from "react";
 import { toast } from "react-toastify";
 import styles from "./page.module.css";
-import { apiUrl } from "@/utils/api";
+import { authFetch } from "@/utils/api";
 
 const goalOptions = [
   { value: "weightLoss", label: "Weight Loss" },
@@ -81,9 +81,8 @@ export default function ProfilePage() {
   const loadProfile = React.useCallback(() => {
     setStatus("loading");
 
-    fetch(apiUrl("/auth/me"), {
+    authFetch("/auth/me", {
       method: "GET",
-      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {
@@ -119,10 +118,9 @@ export default function ProfilePage() {
 
     try {
       setIsSaving(true);
-      const response = await fetch(apiUrl("/auth/me"), {
+      const response = await authFetch("/auth/me", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(formData),
       });
       const data = await response.json();
