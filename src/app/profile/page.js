@@ -1,12 +1,43 @@
 "use client";
 
 import React from "react";
+import { toast } from "react-toastify";
 import styles from "./page.module.css";
 import { apiUrl } from "@/utils/api";
+
+const goalOptions = [
+  { value: "weightLoss", label: "Weight Loss" },
+  { value: "weightMaintain", label: "Weight Maintain" },
+  { value: "weightGain", label: "Weight Gain" },
+];
+
+const activityOptions = [
+  { value: "sedentary", label: "Sedentary" },
+  { value: "light", label: "Light" },
+  { value: "moderate", label: "Moderate" },
+  { value: "active", label: "Active" },
+  { value: "veryactive", label: "Very Active" },
+];
+
+const genderOptions = [
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "other", label: "Other" },
+];
 
 export default function ProfilePage() {
   const [status, setStatus] = React.useState("loading");
   const [profile, setProfile] = React.useState(null);
+  const [formData, setFormData] = React.useState({
+    name: "",
+    gender: "",
+    dob: "",
+    goal: "",
+    activityLevel: "",
+    weightInKg: "",
+    heightInCm: "",
+  });
+  const [isSaving, setIsSaving] = React.useState(false);
 
   const formatLabel = (value) => {
     if (!value) return "Not set";
@@ -17,11 +48,8 @@ export default function ProfilePage() {
 
   const formatDate = (value) => {
     if (!value) return "Not available";
-
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return "Not available";
-    }
+    if (Number.isNaN(date.getTime())) return "Not available";
 
     return new Intl.DateTimeFormat("en-IN", {
       day: "numeric",
@@ -30,7 +58,29 @@ export default function ProfilePage() {
     }).format(date);
   };
 
-  React.useEffect(() => {
+  const formatDateInput = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toISOString().split("T")[0];
+  };
+
+  const hydrateProfile = (data) => {
+    setProfile(data);
+    setFormData({
+      name: data?.name || "",
+      gender: data?.gender || "",
+      dob: formatDateInput(data?.dob),
+      goal: data?.goal || "",
+      activityLevel: data?.activityLevel || "",
+      weightInKg: data?.latestStats?.weightInKg ?? "",
+      heightInCm: data?.latestStats?.heightInCm ?? "",
+    });
+  };
+
+  const loadProfile = React.useCallback(() => {
+    setStatus("loading");
+
     fetch(apiUrl("/auth/me"), {
       method: "GET",
       credentials: "include",
@@ -38,7 +88,7 @@ export default function ProfilePage() {
       .then((res) => res.json())
       .then((data) => {
         if (data?.ok && data?.data) {
-          setProfile(data.data);
+          hydrateProfile(data.data);
           setStatus("authenticated");
           return;
         }
@@ -50,14 +100,55 @@ export default function ProfilePage() {
       });
   }, []);
 
+  React.useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSave = async (event) => {
+    event.preventDefault();
+
+    if (!formData.name || !formData.gender || !formData.dob || !formData.goal || !formData.activityLevel) {
+      toast.error("Please fill in the required profile details.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const response = await fetch(apiUrl("/auth/me"), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+
+      if (!data?.ok) {
+        toast.error(data?.message || "Unable to update profile.");
+        return;
+      }
+
+      toast.success(data.message || "Profile updated successfully.");
+      loadProfile();
+    } catch (error) {
+      toast.error("Unable to update profile right now.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const overviewItems = profile
     ? [
+        { label: "Email", value: profile.email || "Not available" },
         { label: "Goal", value: formatLabel(profile.goal) },
         { label: "Activity", value: formatLabel(profile.activityLevel) },
         { label: "Gender", value: formatLabel(profile.gender) },
         { label: "Date of birth", value: formatDate(profile.dob) },
         { label: "Joined", value: formatDate(profile.joinedAt) },
-        { label: "Email", value: profile.email || "Not available" },
       ]
     : [];
 
@@ -90,19 +181,111 @@ export default function ProfilePage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.panel}>
-        <p className={styles.eyebrow}>Profile</p>
-        <h1>{profile?.name ? `${profile.name}'s profile` : "Your account space"}</h1>
-        {status === "loading" && <p className={styles.copy}>Loading your profile...</p>}
-        {status === "authenticated" && (
-          <div className={styles.content}>
-            <p className={styles.copy}>
-              This page now shows your account details and the latest health data
-              already saved in the app.
-            </p>
+      <section className={styles.hero}>
+        <div className={styles.heroCopy}>
+          <p className={styles.eyebrow}>Profile</p>
+          <h1>{profile?.name ? `${profile.name}'s account` : "Your account space"}</h1>
+          <p className={styles.copy}>
+            Keep your personal fitness setup current so your dashboard, goals, and tracking context
+            stay accurate.
+          </p>
+        </div>
 
-            <section className={styles.section}>
-              <h2>Overview</h2>
+        <div className={styles.heroPanel}>
+          <span>Account status</span>
+          <strong>{status === "authenticated" ? "Logged in and ready to update" : "Sign in to manage your profile"}</strong>
+          <p>
+            Edit your personal details, keep height and weight current, and use the summary below
+            to stay close to your latest health data.
+          </p>
+        </div>
+      </section>
+
+      {status === "loading" && <section className={styles.messagePanel}>Loading your profile...</section>}
+
+      {status === "guest" && (
+        <section className={styles.messagePanel}>
+          You are not logged in right now. Use the login button in the navbar to access your account.
+        </section>
+      )}
+
+      {status === "authenticated" && (
+        <div className={styles.layout}>
+          <section className={styles.editor}>
+            <div className={styles.sectionHeader}>
+              <p className={styles.kicker}>Edit profile</p>
+              <h2>Update your core details</h2>
+            </div>
+
+            <form className={styles.form} onSubmit={handleSave}>
+              <label className={styles.field}>
+                <span>Name</span>
+                <input name="name" value={formData.name} onChange={handleChange} placeholder="Your name" />
+              </label>
+
+              <label className={styles.field}>
+                <span>Date of birth</span>
+                <input name="dob" type="date" value={formData.dob} onChange={handleChange} />
+              </label>
+
+              <label className={styles.field}>
+                <span>Gender</span>
+                <select name="gender" value={formData.gender} onChange={handleChange}>
+                  <option value="">Select gender</option>
+                  {genderOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span>Goal</span>
+                <select name="goal" value={formData.goal} onChange={handleChange}>
+                  <option value="">Select goal</option>
+                  {goalOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span>Activity level</span>
+                <select name="activityLevel" value={formData.activityLevel} onChange={handleChange}>
+                  <option value="">Select activity level</option>
+                  {activityOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.field}>
+                <span>Current weight (kg)</span>
+                <input name="weightInKg" type="number" step="0.1" value={formData.weightInKg} onChange={handleChange} placeholder="Weight in kg" />
+              </label>
+
+              <label className={styles.field}>
+                <span>Current height (cm)</span>
+                <input name="heightInCm" type="number" step="0.1" value={formData.heightInCm} onChange={handleChange} placeholder="Height in cm" />
+              </label>
+
+              <button className={styles.saveButton} type="submit" disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save profile"}
+              </button>
+            </form>
+          </section>
+
+          <section className={styles.summary}>
+            <div className={styles.sectionBlock}>
+              <div className={styles.sectionHeader}>
+                <p className={styles.kicker}>Overview</p>
+                <h2>Account snapshot</h2>
+              </div>
               <div className={styles.grid}>
                 {overviewItems.map((item) => (
                   <div className={styles.card} key={item.label}>
@@ -111,10 +294,13 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
 
-            <section className={styles.section}>
-              <h2>Latest stats</h2>
+            <div className={styles.sectionBlock}>
+              <div className={styles.sectionHeader}>
+                <p className={styles.kicker}>Latest stats</p>
+                <h2>Most recent fitness data</h2>
+              </div>
               <div className={styles.grid}>
                 {latestStats.map((item) => (
                   <div className={styles.card} key={item.label}>
@@ -123,10 +309,13 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-            </section>
+            </div>
 
-            <section className={styles.section}>
-              <h2>Tracking totals</h2>
+            <div className={styles.sectionBlock}>
+              <div className={styles.sectionHeader}>
+                <p className={styles.kicker}>Tracking totals</p>
+                <h2>How much history you have</h2>
+              </div>
               <div className={styles.grid}>
                 {trackingTotals.map((item) => (
                   <div className={styles.card} key={item.label}>
@@ -135,16 +324,10 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-            </section>
-          </div>
-        )}
-        {status === "guest" && (
-          <p className={styles.copy}>
-            You are not logged in right now. Use the login button in the navbar to
-            access your account.
-          </p>
-        )}
-      </section>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
