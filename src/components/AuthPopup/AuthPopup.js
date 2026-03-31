@@ -18,6 +18,7 @@ const AuthPopup = ({ setShowpopup }) => {
   const [signupformData, setSignupFormData] = useState({
     name: "",
     email: "",
+    otp: "",
     password: "",
     weightInKg: 0.0,
     heightInCm: 0.0,
@@ -27,6 +28,7 @@ const AuthPopup = ({ setShowpopup }) => {
     activityLevel: "",
   });
   const [loginformData, setLoginFormData] = useState({ email: "", password: "" });
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const handleLogin = () => {
     fetch(apiUrl("/auth/login"), {
@@ -67,6 +69,35 @@ const AuthPopup = ({ setShowpopup }) => {
       .catch((err) => console.log(err));
   };
 
+  const handleSendOtp = async () => {
+    if (!signupformData.email) {
+      toast.error("Please enter your email first.");
+      return;
+    }
+
+    try {
+      setIsSendingOtp(true);
+      const response = await fetch(apiUrl("/auth/sendotp"), {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({ email: signupformData.email }),
+        credentials: "include",
+      });
+      const data = await response.json();
+
+      if (data.ok) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error("Unable to send OTP right now.");
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
   return (
     <div className="popup">
       <button className="close" onClick={() => setShowpopup(false)}>
@@ -82,6 +113,20 @@ const AuthPopup = ({ setShowpopup }) => {
             <form action="">
               <Input color="warning" placeholder="name" size="lg" variant="outlined" onChange={(e) => setSignupFormData({ ...signupformData, name: e.target.value })} />
               <Input color="warning" placeholder="email" size="lg" variant="outlined" onChange={(e) => setSignupFormData({ ...signupformData, email: e.target.value })} />
+              <div className="otpRow">
+                <Input color="warning" placeholder="email otp" size="lg" variant="outlined" onChange={(e) => setSignupFormData({ ...signupformData, otp: e.target.value })} />
+                <button
+                  className="otpButton"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleSendOtp();
+                  }}
+                  disabled={isSendingOtp}
+                >
+                  {isSendingOtp ? "Sending..." : "Send OTP"}
+                </button>
+              </div>
+              <p className="otpHint">OTP is valid for 5 minutes.</p>
               <Input color="warning" placeholder="password" size="lg" variant="outlined" type="password" onChange={(e) => setSignupFormData({ ...signupformData, password: e.target.value })} />
               <Input color="warning" size="lg" variant="outlined" type="number" placeholder="Weight In Kg" onChange={(e) => setSignupFormData({ ...signupformData, weightInKg: parseFloat(e.target.value) })} />
               <Select color="warning" placeholder="Activity Level" size="lg" variant="solid" onChange={(event, newValue) => setSignupFormData({ ...signupformData, activityLevel: newValue?.toString() || "" })}>
