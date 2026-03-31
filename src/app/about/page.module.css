@@ -1,0 +1,73 @@
+.page {
+    min-height: calc(100vh - 60px);
+    padding: 48px 24px 72px;
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.hero {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.eyebrow {
+    color: var(--col1);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.hero h1 {
+    font-size: clamp(2.25rem, 5vw, 4rem);
+    line-height: 1.05;
+    color: #ffffff;
+}
+
+.copy {
+    max-width: 720px;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.card {
+    background: linear-gradient(145deg, rgba(255, 194, 14, 0.12), rgba(255, 255, 255, 0.04));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 28px;
+}
+
+.card h2 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-bottom: 18px;
+}
+
+.list {
+    display: grid;
+    gap: 14px;
+}
+
+.item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 18px 20px;
+    color: rgba(255, 255, 255, 0.88);
+    line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+    .page {
+        padding: 32px 16px 56px;
+    }
+
+    .card {
+        padding: 20px;
+    }
+}
