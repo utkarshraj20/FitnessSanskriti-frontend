@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar/Navbar";
+import ChatbotWidget from "@/components/ChatbotWidget/ChatbotWidget";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <Navbar />
         {children}
+        <ChatbotWidget />
         <ToastContainer />
       </body>
     </html>
